@@ -96,3 +96,38 @@ exports.deleteQuestion = async (req, res) => {
     });
   }
 };
+
+
+exports.addSolution = async (req, res) => {
+  try {
+    const { id } = req.params;          
+    const { answer } = req.body;        
+    const userId = req.user._id; 
+
+    if (!answer || answer.trim() === "") {
+      return res.status(400).json({ message: "Answer is required" });
+    }
+
+    const question = await questions.findById(id);
+
+    if (!question) {
+      return res.status(404).json({ message: "Question not found" });
+    }
+
+    const newSolution = {
+      answer,
+      createdBy: userId,
+    };
+
+    question.solutions.push(newSolution);
+    await question.save();
+
+    res.status(201).json({
+      message: "Solution added successfully",
+      answer: question.solutions[question.solutions.length - 1],
+    });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
